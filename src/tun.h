@@ -13,11 +13,12 @@
    1492 (Ethernet) - 20 (IPv4, or 40 for IPv6) - 20 (TCP) - 26 (xTun) */
 #define MTU 1426
 
-#define HASHSIZE 256
+#define HASHSIZE 2048
 
 #define DISCONNECTED   0
 #define CONNECTING     1
-#define CONNECTED      2
+#define AUTHING        2
+#define CONNECTED      3
 
 #define MAX_RETRY_INTERVAL 300
 

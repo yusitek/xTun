@@ -4,7 +4,7 @@
 
 #include "peer.h"
 
-#define HASHSIZE 256
+#define HASHSIZE 2048
 
 static uint32_t
 hash_peer(uint32_t addr) {
