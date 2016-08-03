@@ -6,7 +6,7 @@ PKG_RELEASE=
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/lparam/xTun.git
+PKG_SOURCE_URL:=https://github.com/yusitek/xTun.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 
@@ -22,12 +22,12 @@ define Package/xTun/Default
   SECTION:=net
   CATEGORY:=Network
   TITLE:=A secure and fast VPN for protect your network traffic
-  URL:=https://github.com/lparam/xTun
+  URL:=https://github.com/yusitek/xTun
 endef
 
 define Package/xTun
   $(call Package/xTun/Default)
-  DEPENDS:=+libpthread +librt
+  DEPENDS:=+libpthread +librt +libsodium +libuv
 endef
 
 define Package/xTun/description
@@ -35,10 +35,8 @@ define Package/xTun/description
 endef
 
 define Package/xTun/install
-	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/xTun.init $(1)/etc/init.d/xTun
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/xTun $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/xTunClient $(1)/usr/bin
 endef
 
 $(eval $(call BuildPackage,xTun))
