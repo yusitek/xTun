@@ -65,6 +65,11 @@ EXTRA_CFLAGS =
 #########################################################################
 
 CPPFLAGS += -Isrc
+CPPFLAGS += -I3rd/libuv/include -I3rd/libsodium/src/libsodium/include
+ifneq ($(OBJTREE),$(SRCTREE))
+CPPFLAGS += -I3rd/libsodium/src/libsodium/include/sodium
+CPPFLAGS += -I$(OBJTREE)/3rd/libsodium/src/libsodium/include
+endif
 
 
 LDFLAGS = -Wl,--gc-sections
@@ -74,8 +79,9 @@ LIBS += -lrt
 endif
 
 
-
-LIBS += -pthread -ldl -luv -lsodium
+LIBS += $(OBJTREE)/3rd/libuv/.libs/libuv.a
+LIBS += $(OBJTREE)/3rd/libsodium/src/libsodium/.libs/libsodium.a
+LIBS += -pthread -ldl
 
 LDFLAGS += $(LIBS)
 
@@ -88,11 +94,32 @@ XTUN_SERVER=$(OBJTREE)/xTunServer
 include $(SRCTREE)/config.mk
 #########################################################################
 
-all: $(XTUN) $(XTUN_CLIENT) $(XTUN_SERVER)
+all: libuv libsodium $(XTUN) $(XTUN_CLIENT) $(XTUN_SERVER)
 
 
 
 
+
+3rd/libuv/autogen.sh:
+	$(Q)git submodule update --init
+
+$(OBJTREE)/3rd/libuv/Makefile: | 3rd/libuv/autogen.sh
+	$(Q)mkdir -p $(OBJTREE)/3rd/libuv
+	$(Q)cd 3rd/libuv && ./autogen.sh
+	$(Q)cd 3rd/libuv &&autoreconf --force -ivf
+	$(Q)cd $(OBJTREE)/3rd/libuv && $(SRCTREE)/3rd/libuv/configure --host=$(HOST) LDFLAGS= && $(MAKE)
+
+libuv: $(OBJTREE)/3rd/libuv/Makefile
+
+3rd/libsodium/autogen.sh:
+	$(Q)git submodule update --init
+
+$(OBJTREE)/3rd/libsodium/Makefile: | 3rd/libsodium/autogen.sh
+	$(Q)mkdir -p $(OBJTREE)/3rd/libsodium
+	$(Q)cd 3rd/libsodium && ./autogen.sh
+	$(Q)cd $(OBJTREE)/3rd/libsodium && $(SRCTREE)/3rd/libsodium/configure --host=$(HOST) LDFLAGS= && $(MAKE)
+
+libsodium: $(OBJTREE)/3rd/libsodium/Makefile
 
 
 $(XTUN): \
@@ -152,6 +179,16 @@ clean:
 	-o -name '*.tmp' \) -print \
 	| xargs rm -f
 	@rm -f $(XTUN) $(XTUN_CLIENT) $(XTUN_SERVER)
+
+
+
+distclean: clean
+ifeq ($(OBJTREE)/3rd/libsodium/Makefile, $(wildcard $(OBJTREE)/3rd/libsodium/Makefile))
+	$(Q)cd $(OBJTREE)/3rd/libsodium && make distclean
+endif
+ifeq ($(OBJTREE)/3rd/libuv/Makefile, $(wildcard $(OBJTREE)/3rd/libuv/Makefile))
+	$(Q)cd $(OBJTREE)/3rd/libuv && make distclean
+endif
 
 
 
