@@ -4,14 +4,65 @@
 #include "http.h"
 
 static uv_buf_t *header_buf = NULL;
+static char * http_header = NULL;
 static uv_buf_t ok_buf, fail_buf, client_buf;
 static uv_write_t header_write_request;
 
-void init_client_header(char *h)
+
+
+static void read_http_header(char *fname)
 {
-    client_buf.base = strdup(h);
-    client_buf.len = strlen(h);
-    header_buf = &client_buf;
+	FILE *fp;
+
+    fp = fopen(fname, "rb");
+    if(!fp) {
+        logger_log(LOG_ERR, "Error reading Http Header file `%s': %s",
+                   fname, strerror(errno));
+        free(fname);
+    } else {
+        int status = 0;
+        status = fseek(fp, 0, SEEK_END);
+        if (status != 0) {
+            goto closefile;
+        }
+
+        long fsize = ftell(fp);
+        status = fseek(fp, 0, SEEK_SET);  //rewind(fp);
+        if (status != 0) {
+            goto closefile;
+        }
+
+        http_header = malloc(fsize + 1); //calloc( 1, lSize+1 );
+        if( http_header ) {
+             status = fread(http_header, fsize, 1, fp);
+             if ( ferror( fp ) == 0 ) {
+                //if (status == fsize) {
+                http_header[fsize] = 0;
+             } else {
+                http_header[0] = 0;
+             }
+        }
+
+closefile:
+        fclose(fp);
+    }
+}
+
+
+
+int init_client_header(char *fname)
+{
+	int header_len;
+	read_http_header(fname);
+	header_len = strlen(http_header);
+	if ((http_header != NULL) && (header_len >= 16 )) {
+		client_buf.base = http_header;
+		client_buf.len = header_len;
+		header_buf = &client_buf;
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 void init_server_header()

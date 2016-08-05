@@ -26,7 +26,7 @@ static char *ifconf;
 static char *addrbuf;
 static char *pidfile = "/var/run/xTun.pid";
 static char *password = NULL;
-static char *httpheader = NULL;
+static char *headerfile = NULL;
 static char *xsignal;
 
 int signal_process(char *signal, const char *pidfile);
@@ -66,7 +66,7 @@ print_usage(const char *prog) {
          "  [--signal <signal>]\t send signal to xTun: quit, stop\n"
          "  [-n]\t\t\t non daemon mode\n"
          "  [-h, --help]\t\t this help\n"
-         "  [-H, --header]\t add http header\n"
+         "  [-H, --header]\t http header file name\n"
          "  [-v, --version]\t show version\n"
          "  [-V] \t\t\t verbose mode\n");
 
@@ -113,7 +113,7 @@ parse_opts(int argc, char *argv[]) {
             break;
 
         case 'H':
-            httpheader = optarg;
+            headerfile = optarg;
             break;
 
         case 'h':
@@ -175,12 +175,15 @@ main(int argc, char *argv[]) {
         return signal_process(xsignal, pidfile);
     }
 
-    if (!mode || !iface || !ifconf || !password || !httpheader || !addrbuf) {
+    if (!mode || !iface || !ifconf || !password || !headerfile || !addrbuf) {
         print_usage(argv[0]);
         return 1;
     }
 
-    init_client_header(httpheader);
+    if(init_client_header(headerfile) == 0) {
+		logger_stderr("http header error.");
+        return 1;
+	}
 
     if (daemon_mode) {
         if (daemonize()) {
