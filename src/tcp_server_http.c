@@ -97,6 +97,7 @@ recv_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
         if (rc == PACKET_UNCOMPLETE) {
             return;
         } else if (rc == PACKET_INVALID) {
+            logger_log(LOG_ERR, "Filter Invalid: %d", nread);
             goto error;
         }
 
@@ -108,6 +109,7 @@ recv_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
 
         int err = crypto_decrypt(m, c, clen);
         if (err) {
+            logger_log(LOG_ERR, "Fail Decrypt: %d", clen);
             goto error;
         }
 

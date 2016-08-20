@@ -10,9 +10,10 @@ static uv_write_t header_write_request;
 
 
 
-static void read_http_header(char *fname)
+static int read_http_header(char *fname)
 {
 	FILE *fp;
+    int ret = 0;
 
     fp = fopen(fname, "rb");
     if(!fp) {
@@ -38,6 +39,7 @@ static void read_http_header(char *fname)
              if ( ferror( fp ) == 0 ) {
                 //if (status == fsize) {
                 http_header[fsize] = 0;
+                ret = 1;
              } else {
                 http_header[0] = 0;
              }
@@ -46,6 +48,8 @@ static void read_http_header(char *fname)
 closefile:
         fclose(fp);
     }
+
+    return ret;
 }
 
 
@@ -53,7 +57,10 @@ closefile:
 int init_client_header(char *fname)
 {
 	int header_len;
-	read_http_header(fname);
+	if(!read_http_header(fname)) {
+        return 0;
+    }
+
 	header_len = strlen(http_header);
 	if ((http_header != NULL) && (header_len >= 16 )) {
 		client_buf.base = http_header;
@@ -67,11 +74,11 @@ int init_client_header(char *fname)
 
 void init_server_header()
 {
-  ok_buf.base = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\n\r\n";
-  ok_buf.len = 43;
+  ok_buf.base = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\n\r\nUpgrade";
+  ok_buf.len = 50;
 
-  fail_buf.base = "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
-  fail_buf.len  =  45;
+  fail_buf.base = "HTTP/1.1 301 Moved Permanently\r\nLocation: https://www.baidu.com/\r\n\r\n";
+  fail_buf.len  =  68;
 }
 
 //static void
@@ -101,7 +108,7 @@ static int shell_run(char *cmd, char *args)
   int r;
 
   buf = malloc(strlen(cmd) + strlen(args) + 8);
-  sprintf(buf, "sh %s $'%s'", cmd, args);
+  sprintf(buf, "%s $'%s'", cmd, args);
 
   logger_log(LOG_INFO, "executing %s:%s", cmd, args);
   if (0 != (r = system(buf))) {
@@ -122,7 +129,7 @@ send_cb(uv_write_t *req, int status) {
 
 int http_auth(uv_stream_t *stream,  uint8_t * header)
 {
-    if (shell_run("auth",  (char *)header)) {
+    if (shell_run("./auth",  (char *)header)) {
         header_buf = &ok_buf;
     } else {
         header_buf = &fail_buf;
