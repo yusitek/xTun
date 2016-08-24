@@ -96,13 +96,14 @@ dump_hex(const void *data, uint32_t len, char *title) {
     print_buffer(data, len, 1, 16);
 }
 
-
+#if 0
 void
 print_rss() {
     size_t rss;
     uv_resident_set_memory(&rss);
     logger_log(LOG_DEBUG, "resident set memory: %llu", (unsigned long long) rss);
 }
+#endif
 
 int
 resolve_addr(const char *buf, int port, struct sockaddr *addr) {
@@ -237,6 +238,8 @@ parse_addr(struct iphdr *iphdr, char *saddr, char *daddr) {
     strcpy(daddr, a);
 }
 
+
+#if 0
 static void *
 uv_malloc(size_t size) {
     logger_log(LOG_DEBUG, "malloc %ld", size);
@@ -264,3 +267,4 @@ uv_free(void *ptr) {
 int replace_allocator() {
     return uv_replace_allocator(uv_malloc, uv_realloc, uv_callc, uv_free);
 }
+#endif

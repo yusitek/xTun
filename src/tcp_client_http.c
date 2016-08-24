@@ -59,7 +59,7 @@ recv_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
         struct packet *packet = &ctx->packet;
 
         if (ctx->connect == AUTHING) {
-            if (0 == memcmp(packet->buf, "HTTP/1.1 200 OK\r", 16)) {
+            if (0 == memcmp(packet->buf, "HTTP/1.1 200 OK", 15)) {
                 ctx->connect = CONNECTED;
                 packet_reset(packet);
                 logger_log(LOG_INFO, "Auth OK");

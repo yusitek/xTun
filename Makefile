@@ -133,7 +133,6 @@ $(XTUN): \
 	$(OBJTREE)/src/tcp.o \
 	$(OBJTREE)/src/tcp_client.o \
 	$(OBJTREE)/src/tcp_server.o \
-	$(OBJTREE)/src/http.o \
 	$(OBJTREE)/src/udp.o \
 	$(OBJTREE)/src/tun.o \
 	$(OBJTREE)/src/main.o
@@ -149,7 +148,7 @@ $(XTUN_CLIENT): \
 	$(OBJTREE)/src/packet.o \
 	$(OBJTREE)/src/tcp.o \
 	$(OBJTREE)/src/tcp_client_http.o \
-	$(OBJTREE)/src/http.o \
+	$(OBJTREE)/src/http_client.o \
 	$(OBJTREE)/src/tun_client.o \
 	$(OBJTREE)/src/main_client.o
 	$(LINK) $^ -o $@ $(LDFLAGS)
@@ -165,7 +164,7 @@ $(XTUN_SERVER): \
 	$(OBJTREE)/src/packet.o \
 	$(OBJTREE)/src/tcp.o \
 	$(OBJTREE)/src/tcp_server_http.o \
-	$(OBJTREE)/src/http.o \
+	$(OBJTREE)/src/http_server.o \
 	$(OBJTREE)/src/tun_server.o \
 	$(OBJTREE)/src/main_server.o
 	$(LINK) $^ -o $@ $(LDFLAGS)
