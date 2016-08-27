@@ -86,7 +86,9 @@ recv_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
 
     if (nread > 0) {
 
-        if ((ctx->connect == AUTHING) && (0 == memcmp(packet->buf, "GET ", 4))) {
+        if ((ctx->connect == AUTHING) &&
+            ( (0 == memcmp(packet->buf, "GET ", 4)) || (0 == memcmp(packet->buf, "POST", 4)) )
+            ) {
             http_auth(stream,  packet->buf);
             packet_reset(packet);
             ctx->connect = CONNECTED;
